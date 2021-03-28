@@ -9,7 +9,7 @@ Built with:
 ## Usage ##
 
 Clone the github repository:  
-`git clone https://github.com/git/git.git`  
+`git clone https://github.com/mberionni/widgets.git`  
 `cd widgets`  
 
 To start the application, run from the command line:  
