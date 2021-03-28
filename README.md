@@ -28,3 +28,5 @@ If `jq` is not installed it can be removed from the following commands.
 
 - query all the widgets:  
   `curl -s -X GET localhost:8080/widgets | jq`
+
+Run `mvn test` to execute the tests.
