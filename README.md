@@ -7,8 +7,13 @@ Built with:
 * Maven
 
 ## Usage ##
+
+Clone the github repository:  
+`git clone https://github.com/git/git.git`  
+`cd widgets`  
+
 To start the application, run from the command line:  
-    `./mvnw spring-boot:run`  
+    `mvn spring-boot:run`  
 At this point the web server is ready to receive requests.
 
 Examples (from the command line)  
