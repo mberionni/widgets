@@ -19,24 +19,24 @@ public class WidgetMainRepository implements WidgetRepository {
     private final Lock readLock = rwl.readLock();
     private final Lock writeLock = rwl.writeLock();
     /* HashMap is used to find by id (constant time on average) */
-    Map<Long, Widget> mapRepo = new ConcurrentHashMap<>();
+    Map<Long, Widget> widgetsMap = new ConcurrentHashMap<>();
     /*
     ** SortedSet is used to keep the widgets ordered by z-index.
     ** It supports the findAll and findMaxZIndex.
-    ** It is also used to shift widget efficiently (when necessary)
+    ** It is also used to shift widgets efficiently (when necessary)
     */
-    SortedSet<Widget> sortedRepo = new ConcurrentSkipListSet<>();
+    SortedSet<Widget> widgetsZIndex = new ConcurrentSkipListSet<>();
 
     @Override
     public void save(Widget widget) {
         /* checks if there is already a widget with the same z-index */
-        boolean exists = sortedRepo.contains(widget);
+        boolean exists = widgetsZIndex.contains(widget);
         if (exists) {
             saveAndShift(widget);
             return;
         }
-        mapRepo.put(widget.getId(), widget);
-        sortedRepo.add(widget);
+        widgetsMap.put(widget.getId(), widget);
+        widgetsZIndex.add(widget);
     }
 
     private void saveAndShift(Widget widget) {
@@ -44,7 +44,7 @@ public class WidgetMainRepository implements WidgetRepository {
         writeLock.lock();
         try {
             // update z-index of following widgets (if any)
-            SortedSet<Widget> w_subset = sortedRepo.tailSet(widget);
+            SortedSet<Widget> w_subset = widgetsZIndex.tailSet(widget);
             int previous_z = w_subset.first().getzIndex();
             for(Widget w : w_subset) {
                 int current_z = w.getzIndex();
@@ -54,10 +54,10 @@ public class WidgetMainRepository implements WidgetRepository {
                 previous_z = current_z;
                 w.setzIndex(w.getzIndex() + 1);
                 w.setModificationDate(LocalDateTime.now());
-                sortedRepo.add(w);
+                widgetsZIndex.add(w);
             }
-            mapRepo.put(widget.getId(), widget);
-            sortedRepo.add(widget);
+            widgetsMap.put(widget.getId(), widget);
+            widgetsZIndex.add(widget);
         }
         finally {
             writeLock.unlock();
@@ -69,13 +69,7 @@ public class WidgetMainRepository implements WidgetRepository {
         // synchronization to guarantee atomic update
         writeLock.lock();
         try {
-            for (Widget w : sortedRepo) {
-                if (w.getId().intValue() == widget.getId()) {
-                    sortedRepo.remove(w);
-                    break;
-                }
-            }
-            newWidget.setId(widget.getId());
+            widgetsZIndex.remove(widget);
             save(newWidget);
         }
         finally {
@@ -87,7 +81,7 @@ public class WidgetMainRepository implements WidgetRepository {
     public Optional<Widget> findById(long id) {
         readLock.lock();
         try {
-            Widget widget = mapRepo.get(id);
+            Widget widget = widgetsMap.get(id);
             if (widget == null) {
                 return Optional.empty();
             }
@@ -106,18 +100,19 @@ public class WidgetMainRepository implements WidgetRepository {
         try {
             if (page == null || size == null) {
                 // alternatively, if necessary, a deep copy can be returned: sortedRepo.stream().map(Widget::new).collect(Collectors.toList());
-                ret.addAll(sortedRepo);
+                ret.addAll(widgetsZIndex);
                 return ret;
             }
             /* support for pagination */
             int begin = (page * size) - size;
             int end = page * size;
 
-            if (begin > sortedRepo.size()) {
+            if (begin > widgetsZIndex.size()) {
+                /* returns an empty list if the page is greater than total number of pages */
                 return ret;
             }
             int count = 0;
-            for (Widget widget : sortedRepo) {
+            for (Widget widget : widgetsZIndex) {
                 if (count < begin) {
                     count++;
                     continue;
@@ -137,31 +132,31 @@ public class WidgetMainRepository implements WidgetRepository {
 
     @Override
     public void deleteById(long id) {
-        Widget widget = mapRepo.get(id);
+        Widget widget = widgetsMap.get(id);
         if(widget == null) {
             /* do nothing if the widget does not exists */
             return;
         }
-        mapRepo.remove(id);
-        sortedRepo.remove(widget);
+        widgetsMap.remove(id);
+        widgetsZIndex.remove(widget);
     }
 
     @Override
     public Widget findMaxZIndex() {
-        if(sortedRepo.isEmpty()) {
+        if(widgetsZIndex.isEmpty()) {
             return null;
         }
-        return sortedRepo.last();
+        return widgetsZIndex.last();
     }
 
     @Override
     public int size() {
-        return mapRepo.size();
+        return widgetsMap.size();
     }
 
     @Override
     public void clear() {
-        mapRepo.clear();
-        sortedRepo.clear();
+        widgetsMap.clear();
+        widgetsZIndex.clear();
     }
 }

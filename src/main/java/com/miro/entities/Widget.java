@@ -28,16 +28,6 @@ public class Widget implements Comparable<Widget> {
         this.zIndex = zIndex;
     }
 
-    /*public Widget(Widget widget) {
-        this.id = widget.id;
-        this.x = widget.x;
-        this.y = widget.y;
-        this.width = widget.width;
-        this.height = widget.height;
-        this.zIndex = widget.zIndex;
-        this.modificationDate = widget.modificationDate;
-    }*/
-
     public static Widget of(Integer x, Integer y, Integer width, Integer height, Integer z_index, WidgetRepository repo) {
         Widget w = new Widget(x, y, width, height, z_index);
         w.validateAndComplete(repo);
@@ -52,7 +42,7 @@ public class Widget implements Comparable<Widget> {
         this.id = id;
     }
 
-    public int getX() {
+    public Integer getX() {
         return x;
     }
 
@@ -60,7 +50,7 @@ public class Widget implements Comparable<Widget> {
         this.x = x;
     }
 
-    public int getY() {
+    public Integer getY() {
         return y;
     }
 
@@ -73,13 +63,10 @@ public class Widget implements Comparable<Widget> {
     }
 
     public void setzIndex(Integer zIndex) {
-        if (zIndex == null) {
-            throw new InvalidParameterException("Z-index parameter is required!");
-        }
         this.zIndex = zIndex;
     }
 
-    public int getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
@@ -87,7 +74,7 @@ public class Widget implements Comparable<Widget> {
         this.width = width;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
@@ -114,6 +101,26 @@ public class Widget implements Comparable<Widget> {
     @Override
     public int hashCode() {
         return Objects.hash(zIndex);
+    }
+
+    public void merge(Widget widget, WidgetRepository repo) {
+        setId(widget.getId());
+        if (getX() == null) {
+            setX(widget.getX());
+        }
+        if (getY() == null) {
+            setY(widget.getY());
+        }
+        if (getWidth() == null) {
+            setWidth(widget.getWidth());
+        }
+        if (getHeight() == null) {
+            setHeight(widget.getHeight());
+        }
+        if (getzIndex() == null) {
+            setzIndex(widget.getzIndex());
+        }
+        validateAndComplete(repo);
     }
 
     public void validateAndComplete(WidgetRepository repository) {

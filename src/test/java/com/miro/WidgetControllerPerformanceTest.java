@@ -18,13 +18,12 @@ public class WidgetControllerPerformanceTest {
             Widget w = Widget.of(i, i, 10, 10, null, repo);
             repo.save(w);
         }
-        msg("created " + size + " widgets");
+        msg("created " + size + " widgets.");
     }
 
     private void testGetByIdInternal(int size) {
         msg("--------get by Id ------------");
         int id = ThreadLocalRandom.current().nextInt(0, size + 1);
-        fetchData(size);
         msg("fetched " + size + " widgets. Total number of widgets: " + repo.size());
 
         long ini = System.currentTimeMillis();
@@ -62,34 +61,46 @@ public class WidgetControllerPerformanceTest {
         msg("search operation duration (millis): " + (end - ini));
         int size = widgets.size();
         msg("number of widgets returned: " + size);
-        msg("first widget: " + widgets.get(0));
-        msg("last widget: " + widgets.get(size-1));
+        if(size > 0) {
+            msg("first widget: " + widgets.get(0));
+            msg("last widget: " + widgets.get(size - 1));
+        }
         msg("------------------------");
     }
 
     @Test
-    public void testGetById1() {
-        testGetByIdInternal(10000);
+    public void testGetById() {
+        int size = 10000;
+        fetchData(size);
+        testGetByIdInternal(size);
     }
 
     @Test
-    public void testGetById2() {
-        testGetByIdInternal(100000);
+    public void testGetApi1() {
+        int size = 100000;
+        fetchData(size);
+        testGetByIdInternal(size);
         testGetAllInternal();
     }
 
     @Test
-    public void testGetById3() {
-        testGetByIdInternal(1000000);
+    public void testGetApi2() {
+        int size = 1000000;
+        fetchData(size);
+        testGetByIdInternal(size);
         testGetAllInternal();
         testGetPaginationInternal(10, 10);
     }
 
     @Test
-    public void testGetById4() {
-        testGetByIdInternal(10000000);
-        testGetAllInternal();
+    public void testGetApi3() {
+        int size = 10000000;
+        fetchData(size);
+        testGetByIdInternal(size);
         testGetPaginationInternal(100, 3100);
+        testGetPaginationInternal(500, 15000);
+        testGetPaginationInternal(100, 310);
+        testGetAllInternal();
     }
 
     private static void msg(String m) {

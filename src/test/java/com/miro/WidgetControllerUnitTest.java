@@ -193,28 +193,124 @@ public class WidgetControllerUnitTest {
     }
 
     @Test
-    void testChangeWidget() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+    void testUpdateWidget() {
+        Widget w1 = Widget.of(10, 10, 100, 100, 1, repo);
         repo.save(w1);
         long id1 = w1.getId();
         Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
         repo.save(w2);
         long id2 = w2.getId();
-        Widget w_new = Widget.of(30, 30, 50, 50, 2, repo);
-        repo.update(w1, w_new);
+
+        Widget newWidget = new Widget(null, 33, null, 56, null);
+        newWidget.merge(w1, repo);
+        repo.update(w1, newWidget);
 
         List<Widget> widgets = repo.findAll(null, null);
         assertEquals(2, widgets.size());
 
         w1 = widgets.get(0);
-        assertEquals(30, w1.getX());
+        assertEquals(10, w1.getX());
+        assertEquals(33, w1.getY());
+        assertEquals(100, w1.getWidth());
+        assertEquals(56, w1.getHeight());
         assertEquals(id1, w1.getId());
-        assertEquals(2, w1.getzIndex());
+        assertEquals(1, w1.getzIndex());
 
         w2 = widgets.get(1);
         assertEquals(20, w2.getX());
+        assertEquals(20, w2.getY());
+        assertEquals(50, w2.getWidth());
+        assertEquals(50, w2.getHeight());
         assertEquals(id2, w2.getId());
-        assertEquals(3, w2.getzIndex());
+        assertEquals(2, w2.getzIndex());
+    }
+
+    @Test
+    void testUpdateWidgetWithZindex() {
+        Widget w1 = Widget.of(10, 10, 40, 40, 1, repo);
+        repo.save(w1);
+        long id1 = w1.getId();
+        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        repo.save(w2);
+        long id2 = w2.getId();
+
+        Widget widgetNew = new Widget(33, 23, null, null, 1);
+        widgetNew.merge(w1, repo);
+        repo.update(w1, widgetNew);
+
+        List<Widget> widgets = repo.findAll(null, null);
+        assertEquals(2, widgets.size());
+
+        w1 = widgets.get(0);
+        assertEquals(33, w1.getX());
+        assertEquals(23, w1.getY());
+        assertEquals(40, w1.getWidth());
+        assertEquals(40, w1.getHeight());
+        assertEquals(id1, w1.getId());
+        assertEquals(1, w1.getzIndex());
+
+        w2 = widgets.get(1);
+        assertEquals(20, w2.getX());
+        assertEquals(20, w2.getY());
+        assertEquals(50, w2.getWidth());
+        assertEquals(50, w2.getHeight());
+        assertEquals(id2, w2.getId());
+        assertEquals(2, w2.getzIndex());
+    }
+
+    @Test
+    void testUpdateWidgetWithZIndexShift() {
+        Widget w1 = Widget.of(10, 10, 40, 40, 1, repo);
+        repo.save(w1);
+        long id1 = w1.getId();
+        Widget w2 = Widget.of(20, 20, 50, 50, 4, repo);
+        repo.save(w2);
+        long id2 = w2.getId();
+        Widget w3 = Widget.of(30, 30, 60, 60, 5, repo);
+        repo.save(w3);
+        long id3 = w3.getId();
+        Widget w4 = Widget.of(40, 40, 70, 70, 7, repo);
+        repo.save(w4);
+        long id4 = w4.getId();
+
+        Widget widgetNew = new Widget(33, 23, null, null, 5);
+        widgetNew.merge(w2, repo);
+        repo.update(w2, widgetNew);
+
+        List<Widget> widgets = repo.findAll(null, null);
+        assertEquals(4, widgets.size());
+
+        w1 = widgets.get(0);
+        assertEquals(10, w1.getX());
+        assertEquals(10, w1.getY());
+        assertEquals(40, w1.getWidth());
+        assertEquals(40, w1.getHeight());
+        assertEquals(id1, w1.getId());
+        assertEquals(1, w1.getzIndex());
+
+        w2 = widgets.get(1);
+        assertEquals(33, w2.getX());
+        assertEquals(23, w2.getY());
+        assertEquals(50, w2.getWidth());
+        assertEquals(50, w2.getHeight());
+        assertEquals(id2, w2.getId());
+        assertEquals(5, w2.getzIndex());
+
+        w3 = widgets.get(2);
+        assertEquals(30, w3.getX());
+        assertEquals(30, w3.getY());
+        assertEquals(60, w3.getWidth());
+        assertEquals(60, w3.getHeight());
+        assertEquals(id3, w3.getId());
+        assertEquals(6, w3.getzIndex());
+
+        w4 = widgets.get(3);
+        assertEquals(40, w4.getX());
+        assertEquals(40, w4.getY());
+        assertEquals(70, w4.getWidth());
+        assertEquals(70, w4.getHeight());
+        assertEquals(id4, w4.getId());
+        assertEquals(7, w4.getzIndex());
     }
 
     @Test

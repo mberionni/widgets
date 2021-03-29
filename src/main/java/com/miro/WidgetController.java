@@ -77,12 +77,13 @@ public class WidgetController {
 
     @PutMapping("/widgets/{id}")
     ResponseEntity<Widget> updateWidget(@RequestBody Widget newWidget, @PathVariable long id) {
-        Optional<Widget> widget = repository.findById(id);
-        if(widget.isEmpty()) {
+        Optional<Widget> widgetOpt = repository.findById(id);
+        if(widgetOpt.isEmpty()) {
             throw new WidgetNotFoundException(id);
         }
-        newWidget.validateAndComplete(repository);
-        repository.update(widget.get(), newWidget);
+        Widget widget = widgetOpt.get();
+        newWidget.merge(widget, repository);
+        repository.update(widget, newWidget);
         return ResponseEntity.ok().body(newWidget);
     }
 
