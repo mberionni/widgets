@@ -3,6 +3,7 @@ package com.miro;
 import com.miro.entities.Point;
 import com.miro.entities.Widget;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -17,18 +18,22 @@ public class WidgetsPerformanceTest {
 
     private static final WidgetRepository repo = new WidgetMainRepository();
 
+    @BeforeEach
+    private void setup() {
+        Widget.initSequence();
+    }
+
+    @AfterEach
+    private void cleanup() {
+        repo.clear();
+    }
+
     private void fetchData(int size) {
         for (int i = 0; i < size; i++) {
             Widget w = Widget.of(i, i, 10, 10, null, repo);
             repo.save(w);
         }
         msg("created " + size + " widgets.");
-    }
-
-    @AfterEach
-    private void cleanup() {
-        repo.clear();
-        Widget.initSequence();
     }
 
     private void testGetByIdInternal(int size) {
