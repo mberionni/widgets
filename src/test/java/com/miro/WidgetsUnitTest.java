@@ -1,5 +1,6 @@
 package com.miro;
 
+import com.miro.entities.Point;
 import com.miro.entities.Widget;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WidgetControllerUnitTest {
+public class WidgetsUnitTest {
 
     private static final WidgetRepository repo = new WidgetMainRepository();
 
@@ -23,11 +24,18 @@ public class WidgetControllerUnitTest {
         Widget w = Widget.of(20, 20, 50, 50, null, repo);
         repo.save(w);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        /*
+        ** Returns an <a href="#unmodifiable">unmodifiable List</a> containing the elements of
+        ** the given Collection, in its iteration order. The given Collection must not be null,
+        ** and it must not contain any null elements. If the given Collection is subsequently
+        ** modified, the returned List will not reflect such modifications.
+        */
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(1, widgets.size());
 
         Widget widget = widgets.get(0);
         assertEquals(1, widget.getzIndex());
+        assertEquals(20, widget.getX());
     }
 
     @Test
@@ -51,7 +59,7 @@ public class WidgetControllerUnitTest {
         repo.save(w5);
         long id5 = w5.getId();
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(5, widgets.size());
 
         Widget widget = widgets.get(0);
@@ -99,7 +107,7 @@ public class WidgetControllerUnitTest {
         repo.save(w5);
         long id5 = w5.getId();
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(5, widgets.size());
 
         Widget widget = widgets.get(0);
@@ -139,7 +147,7 @@ public class WidgetControllerUnitTest {
         Widget w4 = Widget.of(40, 40, 50, 50, 2, repo);
         repo.save(w4);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(4, widgets.size());
 
         Widget widget = widgets.get(0);
@@ -172,7 +180,7 @@ public class WidgetControllerUnitTest {
         Widget w4 = Widget.of(40, 40, 50, 50, 2, repo);
         repo.save(w4);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(4, widgets.size());
 
         Widget widget = widgets.get(0);
@@ -205,7 +213,7 @@ public class WidgetControllerUnitTest {
         newWidget.merge(w1, repo);
         repo.update(w1, newWidget);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(2, widgets.size());
 
         w1 = widgets.get(0);
@@ -238,7 +246,7 @@ public class WidgetControllerUnitTest {
         widgetNew.merge(w1, repo);
         repo.update(w1, widgetNew);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(2, widgets.size());
 
         w1 = widgets.get(0);
@@ -277,7 +285,7 @@ public class WidgetControllerUnitTest {
         widgetNew.merge(w2, repo);
         repo.update(w2, widgetNew);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         assertEquals(4, widgets.size());
 
         w1 = widgets.get(0);
@@ -347,7 +355,7 @@ public class WidgetControllerUnitTest {
         Widget w4 = Widget.of(40, 40, 50, 50, 4, repo);
         repo.save(w4);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         w1 = widgets.get(0);
         assertEquals(2, w1.getzIndex());
         w1 = widgets.get(1);
@@ -371,7 +379,7 @@ public class WidgetControllerUnitTest {
         Widget w4 = Widget.of(-4, 40, 50, 50, 4, repo);
         repo.save(w4);
 
-        List<Widget> widgets = repo.findAll(null, null);
+        List<Widget> widgets = List.copyOf(repo.findAll(null, null));
         w1 = widgets.get(0);
         assertEquals(-40, w1.getzIndex());
         assertEquals(30, w1.getX());
@@ -408,7 +416,7 @@ public class WidgetControllerUnitTest {
         Widget w9 = Widget.of(90, 90, 50, 50, 8, repo);
         repo.save(w9);
 
-        List<Widget> widgets = repo.findAll(4, 1);
+        List<Widget> widgets = List.copyOf(repo.findAll(4, 1));
         assertEquals(4, widgets.size());
         w1 = widgets.get(0);
         assertEquals(1, w1.getzIndex());
@@ -423,7 +431,7 @@ public class WidgetControllerUnitTest {
         assertEquals(5, w1.getzIndex());
         assertEquals(60, w1.getX());
 
-        widgets = repo.findAll(4, 2);
+        widgets = List.copyOf(repo.findAll(4, 2));
         assertEquals(4, widgets.size());
         w1 = widgets.get(0);
         assertEquals(6, w1.getzIndex());
@@ -438,10 +446,37 @@ public class WidgetControllerUnitTest {
         assertEquals(10, w1.getzIndex());
         assertEquals(10, w1.getX());
 
-        widgets = repo.findAll(4, 3);
+        widgets = List.copyOf(repo.findAll(4, 3));
         assertEquals(1, widgets.size());
         w1 = widgets.get(0);
         assertEquals(40, w1.getzIndex());
         assertEquals(30, w1.getX());
+    }
+
+    @Test
+    void testGetAllWidgetsWithinRectangle() {
+        Widget w1 = Widget.of(0, 0, 100, 100, 10, repo);
+        repo.save(w1);
+        Widget w2 = Widget.of(0, 50, 100, 100, 1, repo);
+        repo.save(w2);
+        Widget w3 = Widget.of(50, 50, 100, 100, 40, repo);
+        repo.save(w3);
+        Widget w4 = Widget.of(60, 60, 100, 100, 4, repo);
+        repo.save(w4);
+
+        Point lowerLeft = Point.of(0, 0);
+        Point upperRight = Point.of(100, 150);
+        List<Widget> widgets = List.copyOf(repo.findAllInRectangle(lowerLeft, upperRight));
+        assertEquals(2, widgets.size());
+
+        w1 = widgets.get(0);
+        assertEquals(1, w1.getzIndex());
+        assertEquals(0, w1.getX());
+        assertEquals(50, w1.getY());
+
+        w2 = widgets.get(1);
+        assertEquals(10, w2.getzIndex());
+        assertEquals(0, w2.getX());
+        assertEquals(0, w2.getY());
     }
 }

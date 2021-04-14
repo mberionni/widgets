@@ -28,10 +28,24 @@ public class Widget implements Comparable<Widget> {
         this.zIndex = zIndex;
     }
 
+    public Widget(Widget widget) {
+        this.x = widget.x;
+        this.y = widget.y;
+        this.width = widget.width;
+        this.height = widget.height;
+        this.modificationDate = widget.modificationDate;
+        this.id = widget.id;
+        this.zIndex = widget.zIndex;
+    }
+
     public static Widget of(Integer x, Integer y, Integer width, Integer height, Integer z_index, WidgetRepository repo) {
         Widget w = new Widget(x, y, width, height, z_index);
         w.validateAndComplete(repo);
         return w;
+    }
+
+    public static void initSequence() {
+        sequence.set(0);
     }
 
     public Long getId() {
@@ -82,10 +96,6 @@ public class Widget implements Comparable<Widget> {
         this.height = height;
     }
 
-    public LocalDateTime getModificationDate() {
-        return modificationDate;
-    }
-
     public void setModificationDate(LocalDateTime modificationDate) {
         this.modificationDate = modificationDate;
     }
@@ -95,7 +105,7 @@ public class Widget implements Comparable<Widget> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Widget widget = (Widget) o;
-        return zIndex.equals(widget.zIndex);
+        return zIndex.intValue() == widget.zIndex.intValue();
     }
 
     @Override

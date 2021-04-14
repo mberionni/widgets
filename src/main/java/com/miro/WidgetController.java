@@ -1,5 +1,6 @@
 package com.miro;
 
+import com.miro.entities.Point;
 import com.miro.entities.Widget;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.security.InvalidParameterException;
-import java.util.List;
 import java.util.Optional;
+import java.util.SortedSet;
 
 @RestController
 public class WidgetController {
@@ -37,24 +38,31 @@ public class WidgetController {
 
     /* pass the state because we do not want to keep the state */
     @GetMapping("/widgets")
-    public ResponseEntity<List<Widget>> getAllWidgets(@RequestParam(required = false) Integer size, @RequestParam(required = false) Integer page) {
+    public ResponseEntity<SortedSet<Widget>> getAllWidgets(@RequestParam(required = false) Integer size,
+            @RequestParam(required = false) Integer page, @RequestParam(required = false) Point lowerLeft,
+            @RequestParam(required = false) Point upperRight) {
+        SortedSet<Widget> widgets;
 
-        int page_size;
-        if (size == null) {
-            page_size = 10;
+        if (size == null && page == null && lowerLeft != null && upperRight != null) {
+            widgets = repository.findAllInRectangle(lowerLeft, upperRight);
         } else {
-            if (size <= 0) {
-                throw new InvalidParameterException("Page size must be greater than zero, but was: " + size + ".");
+            int page_size;
+            if (size == null) {
+                page_size = 10;
+            } else {
+                if (size <= 0) {
+                    throw new InvalidParameterException("Page size must be greater than zero, but was: " + size + ".");
+                }
+                if (size > MAX_PAGE_SIZE) {
+                    throw new InvalidParameterException("Page size can be at most " + MAX_PAGE_SIZE + ", but was: " + size + ".");
+                }
+                page_size = size;
             }
-            if (size > MAX_PAGE_SIZE) {
-                throw new InvalidParameterException("Page size can be at most " + MAX_PAGE_SIZE + ", but was: " + size + ".");
+            if (page != null && page <= 0) {
+                throw new InvalidParameterException("The requested 'page' must be greater than zero, but was: " + page + ".");
             }
-            page_size = size;
+            widgets = repository.findAll(page_size, page, lowerLeft, upperRight);
         }
-        if (page != null && page <= 0) {
-            throw new InvalidParameterException("The requested 'page' must be greater than zero, but was: " + page + ".");
-        }
-        List<Widget> widgets = repository.findAll(page_size, page);
         return ResponseEntity.ok().body(widgets);
     }
 
