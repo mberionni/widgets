@@ -1,14 +1,10 @@
 package com.miro.entities;
 
-import com.miro.WidgetRepository;
-
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class Widget implements Comparable<Widget> {
-    private static final AtomicLong sequence = new AtomicLong();
     private Long id;
     private Integer x;
     private Integer y;
@@ -28,24 +24,10 @@ public class Widget implements Comparable<Widget> {
         this.zIndex = zIndex;
     }
 
-    public Widget(Widget widget) {
-        this.x = widget.x;
-        this.y = widget.y;
-        this.width = widget.width;
-        this.height = widget.height;
-        this.modificationDate = widget.modificationDate;
-        this.id = widget.id;
-        this.zIndex = widget.zIndex;
-    }
-
-    public static Widget of(Integer x, Integer y, Integer width, Integer height, Integer z_index, WidgetRepository repo) {
+    public static Widget of(Integer x, Integer y, Integer width, Integer height, Integer z_index) {
         Widget w = new Widget(x, y, width, height, z_index);
-        w.validateAndComplete(repo);
+        w.validate();
         return w;
-    }
-
-    public static void initSequence() {
-        sequence.set(0);
     }
 
     public Long getId() {
@@ -96,6 +78,10 @@ public class Widget implements Comparable<Widget> {
         this.height = height;
     }
 
+    public LocalDateTime getModificationDate() {
+        return modificationDate;
+    }
+
     public void setModificationDate(LocalDateTime modificationDate) {
         this.modificationDate = modificationDate;
     }
@@ -113,7 +99,7 @@ public class Widget implements Comparable<Widget> {
         return Objects.hash(zIndex);
     }
 
-    public void merge(Widget widget, WidgetRepository repo) {
+    public void merge(Widget widget) {
         setId(widget.getId());
         if (getX() == null) {
             setX(widget.getX());
@@ -130,10 +116,10 @@ public class Widget implements Comparable<Widget> {
         if (getzIndex() == null) {
             setzIndex(widget.getzIndex());
         }
-        validateAndComplete(repo);
+        validate();
     }
 
-    public void validateAndComplete(WidgetRepository repository) {
+    public void validate() {
         if(x == null || y == null || width == null || height == null) {
             throw new InvalidParameterException("Widget's 'x', 'y', 'width' and 'height' parameters are mandatory.");
         }
@@ -143,14 +129,6 @@ public class Widget implements Comparable<Widget> {
         if(height <= 0) {
             throw new InvalidParameterException("Widget's 'height' must be greater than zero, but was: " + height + ".");
         }
-        if(zIndex == null) {
-            Widget max = repository.findMaxZIndex();
-            zIndex = (max == null) ? 1 : max.getzIndex() + 1;
-        }
-        if(id == null) {
-            id = sequence.incrementAndGet();
-        }
-        modificationDate = LocalDateTime.now();
     }
 
     @Override

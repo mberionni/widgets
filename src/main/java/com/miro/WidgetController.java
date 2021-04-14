@@ -36,7 +36,7 @@ public class WidgetController {
         return "Greetings from the Widget Controller!";
     }
 
-    /* pass the state because we do not want to keep the state */
+    /* pass the size/page params because a REST Api does not keep the state */
     @GetMapping("/widgets")
     public ResponseEntity<SortedSet<Widget>> getAllWidgets(@RequestParam(required = false) Integer size,
             @RequestParam(required = false) Integer page, @RequestParam(required = false) Point lowerLeft,
@@ -77,7 +77,7 @@ public class WidgetController {
 
     @PostMapping("/widgets")
     ResponseEntity<Widget> createWidget(@RequestBody Widget newWidget)  {
-        newWidget.validateAndComplete(repository);
+        newWidget.validate();
         repository.save(newWidget);
         URI uri = URI.create("/widgets/" + newWidget.getId());
         return ResponseEntity.created(uri).body(newWidget);
@@ -90,7 +90,7 @@ public class WidgetController {
             throw new WidgetNotFoundException(id);
         }
         Widget widget = widgetOpt.get();
-        newWidget.merge(widget, repository);
+        newWidget.merge(widget);
         repository.update(widget, newWidget);
         return ResponseEntity.ok().body(newWidget);
     }

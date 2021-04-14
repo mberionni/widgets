@@ -15,7 +15,7 @@ public interface WidgetRepository  {
     SortedSet<Widget> findAllInRectangle(Point lowerLeft, Point upperRight);
     SortedSet<Widget> findAll(Integer size, Integer page, Point lowerLeft, Point upperRight);
     void deleteById(long id);
-    Widget findMaxZIndex();
+    void initSequence();
     int size();
     void clear();
 }

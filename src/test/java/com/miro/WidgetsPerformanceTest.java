@@ -20,7 +20,7 @@ public class WidgetsPerformanceTest {
 
     @BeforeEach
     private void setup() {
-        Widget.initSequence();
+        repo.initSequence();
     }
 
     @AfterEach
@@ -30,7 +30,7 @@ public class WidgetsPerformanceTest {
 
     private void fetchData(int size) {
         for (int i = 0; i < size; i++) {
-            Widget w = Widget.of(i, i, 10, 10, null, repo);
+            Widget w = Widget.of(i, i, 10, 10, null);
             repo.save(w);
         }
         msg("created " + size + " widgets.");

@@ -44,6 +44,7 @@ public class WidgetsMultiThreadingTest {
 
     @BeforeEach
     private void init() {
+        repo.initSequence();
         widgetWriter.init();
         widgetReader.init();
     }
@@ -80,7 +81,6 @@ public class WidgetsMultiThreadingTest {
         long nGetAllWidgetsTot = 0;
 
         msg("BEGIN - reading with " + nReaders + " thread(s), writer thread: " + isWriter);
-        Widget.initSequence();
         widgetReader.setNumWidgets(iniSize)
                     .setWriterRunning(isWriter);
 
@@ -137,7 +137,7 @@ public class WidgetsMultiThreadingTest {
         TestUtils.sleep(1500);
     }
 
-    private void mainTestMultiWritersInternal(int nWriters) {
+    private void mainTestMultiWritersSameZIndexInternal(int nWriters) {
         Future<WidgetReader.Results> reader;
         List<Future<Integer>> writers = new ArrayList<>();
         WidgetReader.Results readerResults = new WidgetReader.Results(0, 0, 0, Collections.emptyList());
@@ -145,11 +145,9 @@ public class WidgetsMultiThreadingTest {
         int nGetByIdNotFoundTot = 0;
 
         msg("BEGIN - num writer threads " + nWriters + ", 1 reader thread.");
-        Widget.initSequence();
 
         // submit reader thread
         reader = threadPool.submit(widgetReader.readAndCollect());
-
         // submit the writer threads
         for(int i=0; i < nWriters; i++) {
             msg("starting the writing thread n: " + i);
@@ -190,6 +188,63 @@ public class WidgetsMultiThreadingTest {
         verifyAllWidgets(widgets, readerResults.widgets, size1);
     }
 
+    private void mainTestMultiWritersInternal(int nWriters) {
+        Future<WidgetReader.Results> reader;
+        List<Future<Integer>> writers = new ArrayList<>();
+        WidgetReader.Results readerResults;
+        int numWritersWidgets = 0;
+        int nGetByIdNotFoundTot = 0;
+
+        msg("BEGIN - num writer threads " + nWriters + ", 1 reader thread.");
+        widgetWriter.setSleepIntervalMillis(2);
+        widgetWriter.setZIndexShift(false);
+
+        // submit the writer threads
+        for(int i=0; i < nWriters; i++) {
+            msg("starting the writing thread n: " + i);
+            Future<Integer> writer = threadPool.submit(widgetWriter.createWidgets());
+            writers.add(writer);
+        }
+        // submit reader thread, after a small pause
+        TestUtils.sleep(100);
+        reader = threadPool.submit(widgetReader.readAndCollect());
+
+        msg("running...");
+        TestUtils.sleep(TEST_EXEC_TIME_MILLIS);
+        // stopping the reader and writer
+        widgetWriter.stop();
+        widgetReader.stop();
+        TestUtils.sleep(800);
+
+        try {
+            readerResults = reader.get();
+            nGetByIdNotFoundTot += readerResults.nGetByIdNotFound;
+        } catch (InterruptedException | ExecutionException e) {
+            msg("Error while waiting for future termination: " + e.getMessage());
+        }
+        for(Future<Integer> writer : writers) {
+            try {
+                numWritersWidgets += writer.get();
+            } catch (InterruptedException | ExecutionException e) {
+                msg("Error while waiting for reader future termination: " + e.getMessage());
+            }
+        }
+
+        msg("verifying results...");
+        assertEquals(0, nGetByIdNotFoundTot);
+
+        int size1 = widgetReader.getRepoSize();
+        msg("--- Final repo size: " + size1);
+        SortedSet<Widget> widgets = widgetReader.getAllWidgets();
+        int size2 = widgets.size();
+        assertEquals(size1, size2, "Check consistency of the backing data structures");
+        assertEquals(numWritersWidgets, size1, "Check consistency of the backing data structures");
+        // check that there was no shift
+        for (Widget w : widgets) {
+            assertEquals(w.getId(), w.getzIndex().intValue(), "check z-index is equal to Id (no shift)");
+        }
+    }
+
     private void verifyAllWidgets(SortedSet<Widget> allWidgets, List<Widget> readerWidgets, int size) {
         for (Widget w : readerWidgets) {
             assertTrue(allWidgets.contains(w));
@@ -200,6 +255,7 @@ public class WidgetsMultiThreadingTest {
             assertEquals(i, w.getY());
             assertEquals(i, w.getzIndex());
             i++;
+            // IMPROVE: 10 should not be hardcoded (become a parameter)
             if(i == 10) {
                 break;
             }
@@ -217,7 +273,6 @@ public class WidgetsMultiThreadingTest {
         List<Integer> zIndexes = List.of(100, 200, 300, 400);
 
         msg("BEGIN - num reader (specific value) threads " + nReaders + ", 1 writer thread.");
-        Widget.initSequence();
         widgetReader.setNumWidgets(iniSize)
                     .setZIndexes(zIndexes);
         widgetWriter.setZIndexes(zIndexes);
@@ -322,7 +377,7 @@ public class WidgetsMultiThreadingTest {
     @Order(6)
     public void testReadingThreadWhileMultiWritingWithShift() {
         int nWriters = 4;
-        mainTestMultiWritersInternal(nWriters);
+        mainTestMultiWritersSameZIndexInternal(nWriters);
     }
 
     @Test
@@ -331,5 +386,12 @@ public class WidgetsMultiThreadingTest {
         int nReaders = 4;
         int iniSize = 10000;
         mainTestReadingSpecificWidget(iniSize, nReaders);
+    }
+
+    @Test
+    @Order(8)
+    public void testReadingWhileMultiWritingThreads() {
+        int nWriters = 6;
+        mainTestMultiWritersInternal(nWriters);
     }
 }

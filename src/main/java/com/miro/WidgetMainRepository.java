@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.StampedLock;
 
 public class WidgetMainRepository implements WidgetRepository {
@@ -35,6 +37,7 @@ public class WidgetMainRepository implements WidgetRepository {
         return (w1.getX() < w2.getX()) ? - 1 : 1;
     };
     private final SortedSet<Widget> widgetsX = new TreeSet<>(compX);
+    private static final AtomicLong sequence = new AtomicLong();
 
     @Override
     public void save(Widget widget) {
@@ -43,13 +46,24 @@ public class WidgetMainRepository implements WidgetRepository {
 
     private void saveInternal(Widget widget, boolean writeLockAcquired) {
         long stamp = 0;
+        boolean exists;
 
         if(!writeLockAcquired) {
             // synchronization to guarantee atomic update
             stamp = sl.writeLock();
         }
         try {
-            boolean exists = widgetsZIndex.contains(widget);
+            if (widget.getzIndex() == null) {
+                widget.setzIndex(getNextZIndex());
+                exists = false;
+            } else {
+                exists = widgetsZIndex.contains(widget);
+            }
+            // the Id is already set in case of update
+            if (widget.getId() == null) {
+                widget.setId(sequence.incrementAndGet());
+            }
+            widget.setModificationDate(LocalDateTime.now());
             if (exists) {
                 saveAndShift(widget);
             } else {
@@ -224,22 +238,35 @@ public class WidgetMainRepository implements WidgetRepository {
 
     @Override
     public void deleteById(long id) {
-        Widget widget = widgetsMap.get(id);
-        if (widget == null) {
-            /* do nothing if the widget does not exists */
-            return;
+        long stamp = sl.writeLock();
+        try {
+            Widget widget = widgetsMap.get(id);
+            if (widget == null) {
+                /* do nothing if the widget does not exists */
+                return;
+            }
+            widgetsMap.remove(id);
+            widgetsZIndex.remove(widget);
+            widgetsX.remove(widget);
+        } finally {
+            sl.unlockWrite(stamp);
         }
-        widgetsMap.remove(id);
-        widgetsZIndex.remove(widget);
-        widgetsX.remove(widget);
+    }
+
+    /* This function has to be used in an already thread-safe context */
+    private int getNextZIndex() {
+        int ret;
+        try {
+            ret = widgetsZIndex.last().getzIndex() + 1;
+        } catch (NoSuchElementException e) {
+            ret = 1;
+        }
+        return ret;
     }
 
     @Override
-    public Widget findMaxZIndex() {
-        if (widgetsZIndex.isEmpty()) {
-            return null;
-        }
-        return widgetsZIndex.last();
+    public void initSequence() {
+        sequence.set(0);
     }
 
     @Override

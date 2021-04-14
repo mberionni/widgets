@@ -8,13 +8,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class WidgetWriter {
-    private static final long sleepIntervalMillis = 200;
     private static final int SLEEP_BATCH = 200;
     private static final int Z_INDEX_BATCH = 10;
+    private volatile long sleepIntervalMillis = 200;
     private volatile boolean running;
+    private volatile boolean ZIndexShift = true;
     private final WidgetRepository repo;
     private int size = 0;
-    private List<Integer> zIndexes = Collections.emptyList();
+    private List<Integer> ZIndexes = Collections.emptyList();
 
     public WidgetWriter(WidgetRepository repo) {
         this.repo = repo;
@@ -27,7 +28,7 @@ public class WidgetWriter {
     public void initialFetch(int initialSize) {
         TestUtils.msg("Initial fetch, " + initialSize + " widgets!");
         for (int i=0; i < initialSize; i++) {
-            Widget w = Widget.of(i, i, 10, 10, null, repo);
+            Widget w = Widget.of(i, i, 10, 10, null);
             repo.save(w);
         }
         size = initialSize;
@@ -41,12 +42,12 @@ public class WidgetWriter {
             if ((i % SLEEP_BATCH) == 0) {
                 TestUtils.sleep(sleepIntervalMillis);
             }
-            Widget w = Widget.of(i, i, 10, 10, null, repo);
+            Widget w = Widget.of(i, i, 10, 10, null);
             repo.save(w);
             i++;
-            if ((i % Z_INDEX_BATCH) == 0) {
+            if (ZIndexShift && (i % Z_INDEX_BATCH) == 0) {
                 /* z-index already existing, will acquire a write lock */
-                w = Widget.of(i, i, 10, 10, i - 12000, repo);
+                w = Widget.of(i, i, 10, 10, i - 12000);
                 repo.save(w);
                 i++;
             }
@@ -58,10 +59,10 @@ public class WidgetWriter {
     private int doCreateSpecificWidgets() {
         TestUtils.msg("Thread Id: " + Thread.currentThread().getId() + ": starting create specific widgets task.");
         int i = 0;
-        while(running && i < zIndexes.size()) {
+        while(running && i < ZIndexes.size()) {
             TestUtils.sleep(TimeUnit.SECONDS.toMillis(1));
-            int zIndex = zIndexes.get(i);
-            Widget w = Widget.of(i, i, 10, 10, zIndex, repo);
+            int zIndex = ZIndexes.get(i);
+            Widget w = Widget.of(i, i, 10, 10, zIndex);
             repo.save(w);
             i++;
         }
@@ -73,7 +74,7 @@ public class WidgetWriter {
         TestUtils.msg("Thread Id: " + Thread.currentThread().getId() + ": starting create widgets task.");
         int i = 1;
         while(running) {
-            Widget w = Widget.of(i, i, 10, 10, Math.min(i, 10), repo);
+            Widget w = Widget.of(i, i, 10, 10, Math.min(i, 10));
             repo.save(w);
             if ((i % SLEEP_BATCH) == 0) {
                 TestUtils.sleep(sleepIntervalMillis);
@@ -89,8 +90,16 @@ public class WidgetWriter {
         running = false;
     }
 
-    void setZIndexes(List<Integer> zIndexes) {
-        this.zIndexes = zIndexes;
+    void setZIndexes(List<Integer> ZIndexes) {
+        this.ZIndexes = ZIndexes;
+    }
+
+    void setSleepIntervalMillis(long millis) {
+        this.sleepIntervalMillis = millis;
+    }
+
+    void setZIndexShift(boolean ZIndexShift) {
+        this.ZIndexShift = ZIndexShift;
     }
 
     Callable<Integer> createWidgets() {

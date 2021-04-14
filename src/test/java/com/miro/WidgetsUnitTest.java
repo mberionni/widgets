@@ -21,7 +21,7 @@ public class WidgetsUnitTest {
 
     @Test
     void testCreateWidget() {
-        Widget w = Widget.of(20, 20, 50, 50, null, repo);
+        Widget w = Widget.of(20, 20, 50, 50, null);
         repo.save(w);
 
         /*
@@ -40,14 +40,14 @@ public class WidgetsUnitTest {
 
     @Test
     void testZIndexShiftAll() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 1);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 3, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 3);
         repo.save(w3);
         long id3 = w3.getId();
-        Widget w4 = Widget.of(40, 40, 50, 50, 4, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 4);
         repo.save(w4);
         long id4 = w4.getId();
 
@@ -55,7 +55,7 @@ public class WidgetsUnitTest {
         assertEquals(3, wx.getzIndex());
 
         /* add a widget with an already existing z-index */
-        Widget w5 = Widget.of(50, 50, 50, 50, 2, repo);
+        Widget w5 = Widget.of(50, 50, 50, 50, 2);
         repo.save(w5);
         long id5 = w5.getId();
 
@@ -91,19 +91,19 @@ public class WidgetsUnitTest {
 
     @Test
     void testZIndexShiftSingle() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 1);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 4, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 4);
         repo.save(w3);
         long id3 = w3.getId();
-        Widget w4 = Widget.of(40, 40, 50, 50, 5, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 5);
         repo.save(w4);
         long id4 = w4.getId();
 
         /* add a widget with an already existing z-index */
-        Widget w5 = Widget.of(50, 50, 50, 50, 2, repo);
+        Widget w5 = Widget.of(50, 50, 50, 50, 2);
         repo.save(w5);
         long id5 = w5.getId();
 
@@ -136,15 +136,15 @@ public class WidgetsUnitTest {
 
     @Test
     void testZIndexNoShift() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 1);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 3, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 3);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 4, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 4);
         repo.save(w3);
 
         /* add a widget with an z-index that fills a gap */
-        Widget w4 = Widget.of(40, 40, 50, 50, 2, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 2);
         repo.save(w4);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -169,15 +169,15 @@ public class WidgetsUnitTest {
 
     @Test
     void testZIndexNoShiftWithGap() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 1);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 5, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 5);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 6, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 6);
         repo.save(w3);
 
         /* add a widget with an z-index in a gap */
-        Widget w4 = Widget.of(40, 40, 50, 50, 2, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 2);
         repo.save(w4);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -202,15 +202,15 @@ public class WidgetsUnitTest {
 
     @Test
     void testUpdateWidget() {
-        Widget w1 = Widget.of(10, 10, 100, 100, 1, repo);
+        Widget w1 = Widget.of(10, 10, 100, 100, 1);
         repo.save(w1);
         long id1 = w1.getId();
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
         long id2 = w2.getId();
 
         Widget newWidget = new Widget(null, 33, null, 56, null);
-        newWidget.merge(w1, repo);
+        newWidget.merge(w1); // assign to newWidget the same zIndex and Id of w1
         repo.update(w1, newWidget);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -234,16 +234,16 @@ public class WidgetsUnitTest {
     }
 
     @Test
-    void testUpdateWidgetWithZindex() {
-        Widget w1 = Widget.of(10, 10, 40, 40, 1, repo);
+    void testUpdateWidgetWithZIndex() {
+        Widget w1 = Widget.of(10, 10, 40, 40, 1);
         repo.save(w1);
         long id1 = w1.getId();
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
         long id2 = w2.getId();
 
         Widget widgetNew = new Widget(33, 23, null, null, 1);
-        widgetNew.merge(w1, repo);
+        widgetNew.merge(w1);
         repo.update(w1, widgetNew);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -268,21 +268,21 @@ public class WidgetsUnitTest {
 
     @Test
     void testUpdateWidgetWithZIndexShift() {
-        Widget w1 = Widget.of(10, 10, 40, 40, 1, repo);
+        Widget w1 = Widget.of(10, 10, 40, 40, 1);
         repo.save(w1);
         long id1 = w1.getId();
-        Widget w2 = Widget.of(20, 20, 50, 50, 4, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 4);
         repo.save(w2);
         long id2 = w2.getId();
-        Widget w3 = Widget.of(30, 30, 60, 60, 5, repo);
+        Widget w3 = Widget.of(30, 30, 60, 60, 5);
         repo.save(w3);
         long id3 = w3.getId();
-        Widget w4 = Widget.of(40, 40, 70, 70, 7, repo);
+        Widget w4 = Widget.of(40, 40, 70, 70, 7);
         repo.save(w4);
         long id4 = w4.getId();
 
         Widget widgetNew = new Widget(33, 23, null, null, 5);
-        widgetNew.merge(w2, repo);
+        widgetNew.merge(w2);
         repo.update(w2, widgetNew);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -323,13 +323,13 @@ public class WidgetsUnitTest {
 
     @Test
     void testDeletingWidget() {
-        Widget w1 = Widget.of(10, 10, 50, 50, 1, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 1);
         repo.save(w1);
         long id1 = w1.getId();
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
         long id2 = w2.getId();
-        Widget w3 = Widget.of(30, 30, 50, 50, 3, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 3);
         repo.save(w3);
         long id3 = w3.getId();
 
@@ -346,13 +346,13 @@ public class WidgetsUnitTest {
     @Test
     void testGetAllWidgets() {
         /* widgets are returned sorted by z-index */
-        Widget w1 = Widget.of(10, 10, 50, 50, 10, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 10);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 40, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 40);
         repo.save(w3);
-        Widget w4 = Widget.of(40, 40, 50, 50, 4, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 4);
         repo.save(w4);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -369,14 +369,14 @@ public class WidgetsUnitTest {
     @Test
     void testGetAllWidgetsWithNegativeZIndex() {
         /* widgets are returned sorted by z-index */
-        Widget w1 = Widget.of(-10, 10, 50, 50, -10, repo);
+        Widget w1 = Widget.of(-10, 10, 50, 50, -10);
         repo.save(w1);
         System.out.println("w1 id:" + w1.getId());
-        Widget w2 = Widget.of(20, 20, 50, 50, 2, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 2);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, -40, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, -40);
         repo.save(w3);
-        Widget w4 = Widget.of(-4, 40, 50, 50, 4, repo);
+        Widget w4 = Widget.of(-4, 40, 50, 50, 4);
         repo.save(w4);
 
         List<Widget> widgets = List.copyOf(repo.findAll(null, null));
@@ -397,23 +397,23 @@ public class WidgetsUnitTest {
     @Test
     void testGetAllWidgetsWithPagination() {
         /* widgets are returned sorted by z-index */
-        Widget w1 = Widget.of(10, 10, 50, 50, 10, repo);
+        Widget w1 = Widget.of(10, 10, 50, 50, 10);
         repo.save(w1);
-        Widget w2 = Widget.of(20, 20, 50, 50, 1, repo);
+        Widget w2 = Widget.of(20, 20, 50, 50, 1);
         repo.save(w2);
-        Widget w3 = Widget.of(30, 30, 50, 50, 40, repo);
+        Widget w3 = Widget.of(30, 30, 50, 50, 40);
         repo.save(w3);
-        Widget w4 = Widget.of(40, 40, 50, 50, 4, repo);
+        Widget w4 = Widget.of(40, 40, 50, 50, 4);
         repo.save(w4);
-        Widget w5 = Widget.of(50, 50, 50, 50, 3, repo);
+        Widget w5 = Widget.of(50, 50, 50, 50, 3);
         repo.save(w5);
-        Widget w6 = Widget.of(60, 60, 50, 50, 5, repo);
+        Widget w6 = Widget.of(60, 60, 50, 50, 5);
         repo.save(w6);
-        Widget w7 = Widget.of(70, 70, 50, 50, 6, repo);
+        Widget w7 = Widget.of(70, 70, 50, 50, 6);
         repo.save(w7);
-        Widget w8 = Widget.of(80, 80, 50, 50, 7, repo);
+        Widget w8 = Widget.of(80, 80, 50, 50, 7);
         repo.save(w8);
-        Widget w9 = Widget.of(90, 90, 50, 50, 8, repo);
+        Widget w9 = Widget.of(90, 90, 50, 50, 8);
         repo.save(w9);
 
         List<Widget> widgets = List.copyOf(repo.findAll(4, 1));
@@ -455,13 +455,13 @@ public class WidgetsUnitTest {
 
     @Test
     void testGetAllWidgetsWithinRectangle() {
-        Widget w1 = Widget.of(0, 0, 100, 100, 10, repo);
+        Widget w1 = Widget.of(0, 0, 100, 100, 10);
         repo.save(w1);
-        Widget w2 = Widget.of(0, 50, 100, 100, 1, repo);
+        Widget w2 = Widget.of(0, 50, 100, 100, 1);
         repo.save(w2);
-        Widget w3 = Widget.of(50, 50, 100, 100, 40, repo);
+        Widget w3 = Widget.of(50, 50, 100, 100, 40);
         repo.save(w3);
-        Widget w4 = Widget.of(60, 60, 100, 100, 4, repo);
+        Widget w4 = Widget.of(60, 60, 100, 100, 4);
         repo.save(w4);
 
         Point lowerLeft = Point.of(0, 0);
