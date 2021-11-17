@@ -1,6 +1,5 @@
 package com.miro.entities;
 
-import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -22,12 +21,6 @@ public class Widget implements Comparable<Widget> {
         this.width = width;
         this.height = height;
         this.zIndex = zIndex;
-    }
-
-    public static Widget of(Integer x, Integer y, Integer width, Integer height, Integer z_index) {
-        Widget w = new Widget(x, y, width, height, z_index);
-        w.validate();
-        return w;
     }
 
     public Long getId() {
@@ -97,38 +90,6 @@ public class Widget implements Comparable<Widget> {
     @Override
     public int hashCode() {
         return Objects.hash(zIndex);
-    }
-
-    public void merge(Widget widget) {
-        setId(widget.getId());
-        if (getX() == null) {
-            setX(widget.getX());
-        }
-        if (getY() == null) {
-            setY(widget.getY());
-        }
-        if (getWidth() == null) {
-            setWidth(widget.getWidth());
-        }
-        if (getHeight() == null) {
-            setHeight(widget.getHeight());
-        }
-        if (getzIndex() == null) {
-            setzIndex(widget.getzIndex());
-        }
-        validate();
-    }
-
-    public void validate() {
-        if(x == null || y == null || width == null || height == null) {
-            throw new InvalidParameterException("Widget's 'x', 'y', 'width' and 'height' parameters are mandatory.");
-        }
-        if(width <= 0) {
-            throw new InvalidParameterException("Widget's 'width' must be greater than zero, but was: " + width + ".");
-        }
-        if(height <= 0) {
-            throw new InvalidParameterException("Widget's 'height' must be greater than zero, but was: " + height + ".");
-        }
     }
 
     @Override

@@ -10,4 +10,9 @@ public class RepositoryConfiguration {
     public WidgetRepository repository() {
         return new WidgetMainRepository();
     }
+
+    @Bean
+    public WidgetUtil util() {
+        return new WidgetUtil();
+    }
 }

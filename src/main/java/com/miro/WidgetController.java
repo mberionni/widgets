@@ -26,9 +26,12 @@ public class WidgetController {
 
     @Autowired
     WidgetRepository repository;
+    @Autowired
+    WidgetUtil utility;
 
-    WidgetController(WidgetRepository repository) {
+    WidgetController(WidgetRepository repository, WidgetUtil utility) {
         this.repository = repository;
+        this.utility = utility;
     }
 
     @RequestMapping("/")
@@ -77,7 +80,7 @@ public class WidgetController {
 
     @PostMapping("/widgets")
     ResponseEntity<Widget> createWidget(@RequestBody Widget newWidget)  {
-        newWidget.validate();
+        utility.validate(newWidget);
         repository.save(newWidget);
         URI uri = URI.create("/widgets/" + newWidget.getId());
         return ResponseEntity.created(uri).body(newWidget);
@@ -90,7 +93,7 @@ public class WidgetController {
             throw new WidgetNotFoundException(id);
         }
         Widget widget = widgetOpt.get();
-        newWidget.merge(widget);
+        utility.merge(widget, newWidget);
         repository.update(widget, newWidget);
         return ResponseEntity.ok().body(newWidget);
     }

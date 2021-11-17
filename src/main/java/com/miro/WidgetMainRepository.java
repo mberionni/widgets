@@ -188,8 +188,6 @@ public class WidgetMainRepository implements WidgetRepository {
 
     private SortedSet<Widget> findAllInternal(Integer page_size, Integer page_num, Point lowerLeft, Point upperRight) {
         SortedSet<Widget> ret = new TreeSet<>();
-        int begin;
-        int end;
 
         boolean pageFilter = page_num != null && page_size != null;
         boolean areaFilter = lowerLeft != null && upperRight != null;
@@ -199,8 +197,8 @@ public class WidgetMainRepository implements WidgetRepository {
             return widgetsZIndex;
         }
 
-        begin = 0;
-        end = widgetsZIndex.size();
+        int begin = 0;
+        int end = widgetsZIndex.size();
         /* support for pagination */
         if(pageFilter) {
             begin = (page_num * page_size) - page_size;
@@ -242,7 +240,7 @@ public class WidgetMainRepository implements WidgetRepository {
         try {
             Widget widget = widgetsMap.get(id);
             if (widget == null) {
-                /* do nothing if the widget does not exists */
+                /* do nothing if the widget does not exist */
                 return;
             }
             widgetsMap.remove(id);

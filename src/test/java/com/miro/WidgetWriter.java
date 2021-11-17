@@ -14,11 +14,13 @@ public class WidgetWriter {
     private volatile boolean running;
     private volatile boolean ZIndexShift = true;
     private final WidgetRepository repo;
+    private final WidgetUtil util;
     private int size = 0;
     private List<Integer> ZIndexes = Collections.emptyList();
 
-    public WidgetWriter(WidgetRepository repo) {
+    public WidgetWriter(WidgetRepository repo, WidgetUtil util) {
         this.repo = repo;
+        this.util = util;
     }
 
     public void init() {
@@ -28,7 +30,7 @@ public class WidgetWriter {
     public void initialFetch(int initialSize) {
         TestUtils.msg("Initial fetch, " + initialSize + " widgets!");
         for (int i=0; i < initialSize; i++) {
-            Widget w = Widget.of(i, i, 10, 10, null);
+            Widget w = util.of(i, i, 10, 10, null);
             repo.save(w);
         }
         size = initialSize;
@@ -42,12 +44,12 @@ public class WidgetWriter {
             if ((i % SLEEP_BATCH) == 0) {
                 TestUtils.sleep(sleepIntervalMillis);
             }
-            Widget w = Widget.of(i, i, 10, 10, null);
+            Widget w = util.of(i, i, 10, 10, null);
             repo.save(w);
             i++;
             if (ZIndexShift && (i % Z_INDEX_BATCH) == 0) {
                 /* z-index already existing, will acquire a write lock */
-                w = Widget.of(i, i, 10, 10, i - 12000);
+                w = util.of(i, i, 10, 10, i - 12000);
                 repo.save(w);
                 i++;
             }
@@ -62,7 +64,7 @@ public class WidgetWriter {
         while(running && i < ZIndexes.size()) {
             TestUtils.sleep(TimeUnit.SECONDS.toMillis(1));
             int zIndex = ZIndexes.get(i);
-            Widget w = Widget.of(i, i, 10, 10, zIndex);
+            Widget w = util.of(i, i, 10, 10, zIndex);
             repo.save(w);
             i++;
         }
@@ -74,7 +76,7 @@ public class WidgetWriter {
         TestUtils.msg("Thread Id: " + Thread.currentThread().getId() + ": starting create widgets task.");
         int i = 1;
         while(running) {
-            Widget w = Widget.of(i, i, 10, 10, Math.min(i, 10));
+            Widget w = util.of(i, i, 10, 10, Math.min(i, 10));
             repo.save(w);
             if ((i % SLEEP_BATCH) == 0) {
                 TestUtils.sleep(sleepIntervalMillis);

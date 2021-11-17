@@ -32,13 +32,15 @@ public class WidgetsMultiThreadingTest {
     private static WidgetReader widgetReader;
     private static ExecutorService threadPool;
     private static WidgetRepository repo;
+    private static WidgetUtil util;
     private static final int TEST_EXEC_TIME_MILLIS = 10000;
 
     @BeforeAll
     static void setupAll() {
         repo = new WidgetMainRepository();
+        util = new WidgetUtil();
         threadPool = Executors.newCachedThreadPool();
-        widgetWriter = new WidgetWriter(repo);
+        widgetWriter = new WidgetWriter(repo, util);
         widgetReader = new WidgetReader(repo);
     }
 

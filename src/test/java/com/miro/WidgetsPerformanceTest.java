@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WidgetsPerformanceTest {
 
-    private static final WidgetRepository repo = new WidgetMainRepository();
+    private final WidgetRepository repo = new WidgetMainRepository();
+    private final WidgetUtil util = new WidgetUtil();
 
     @BeforeEach
     private void setup() {
@@ -30,7 +31,7 @@ public class WidgetsPerformanceTest {
 
     private void fetchData(int size) {
         for (int i = 0; i < size; i++) {
-            Widget w = Widget.of(i, i, 10, 10, null);
+            Widget w = util.of(i, i, 10, 10, null);
             repo.save(w);
         }
         msg("created " + size + " widgets.");
